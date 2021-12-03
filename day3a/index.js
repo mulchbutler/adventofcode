@@ -7,6 +7,17 @@ axios.get(`https://adventofcode.com/2021/day/3/input`,{
     }
 })
 .then(({data}) => {
+    const power_consumptio2  = 
+    data
+    .trim()
+    .split('\n')
+    .reduce((b,r,i,a)=>[...r].map((v,j)=>~~b[j]+~~v-(!i&&a.length/2)),[])
+    .reduce(([g,e],c)=>([g+(+(c>=0)),e+(+(c<0))]),['',''])
+    .reduce((p,n)=>p*+('0b'+n),1)
+    console.log(power_consumptio2)
+    
+
+
     // Split on the new lines, remove any blank rows (the input ends with an empty row)
     const arr = data.split('\n').filter(r => r !== "")
 
