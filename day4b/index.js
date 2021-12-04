@@ -1,13 +1,6 @@
 const axios = require('axios');
 require('dotenv').config()
 
-class Card {
-    constructor(number) {
-      this.number = number;
-    }
-  }
-  
-
 /**
  * A function that takes a card and a number, and toggles the called flag for each instance of the number in the card
  * @param {[][]Object} card 
@@ -50,19 +43,48 @@ const get_card_score = (card) => {
 }
 
 
-axios.get(`https://adventofcode.com/2021/day/4/input`,{
-    "headers": {
-        Cookie: `session=${process.env.session}`
+/**
+ * A function to pretty print a collection of bingo cards for fun
+ * @param {*} bingo_cards 
+ */
+const pretty_print_boards = bingo_cards => {
+    let final = new Array(16 * 10).join( '-' )
+    for(let row_i = 0; row_i < 50; row_i++) {
+        if (row_i % 5 === 0) {
+            final += '\n'
+        }
+        for(let col_j = 0; col_j < 50; col_j++) {
+            if(col_j % 5 === 0) {
+                final += '     '
+            }
+            let operating_card = bingo_cards[(~~(row_i/5) * 10) + ~~(col_j / 5)]
+            if (check_for_win(operating_card)) {
+                final += '  '
+            } else {
+                final += operating_card[row_i%5][col_j%5].marked ?'+ ':'. '
+            }
+        }
+        final += '\n'
     }
-})
-.then(({data}) => {
+    console.log(final)
+}
+
+
+
+(async function() {
+    const {data} = await axios.get(`https://adventofcode.com/2021/day/4/input`,{
+        "headers": {
+            Cookie: `session=${process.env.session}`
+        }
+    })
     // The data has an extra row at the end that we want to trim, and each board is seperated by an empty line, so we split on that line
     let stg = data.trim().split('\n\n')
 
     // The first row is the bingo numbers to be called in a comma seperated list
     const bingo_numbers = stg[0].split(',').map(num => parseInt(num))
 
-    
+
+
     // We're going to process each card into a matrix, with each number being an object to track if it's been called yet
     let bingo_cards = stg
         .slice(1) // The remaining rows are the bingo cards
@@ -71,26 +93,30 @@ axios.get(`https://adventofcode.com/2021/day/4/input`,{
         .filter(num=> num !== '') // There are extra spaces that made it look pretty, so strip out those entries
         .map(num => ({num: parseInt(num), marked: false})))) // Parse each number and turn it into an object with the called boolean
         
+    let printing_cards = bingo_cards.slice()
     // Now we process everything. We want to loop through the bingo numbers until we find a winning card
     let winning_cards
     let winning_num = 0
-    bingo_numbers.some(called_number => {
+    for(let i = 0; i < bingo_numbers.length; i++) {
+        const called_number = bingo_numbers[i]
         bingo_cards = bingo_cards.map(card => mark_number(card, called_number))
-        
+        printing_cards = printing_cards.map(card => mark_number(card, called_number))
+        pretty_print_boards(printing_cards)
+
         // In part 2, we actually want to remove winning cards until we're left with only a single winner
         let round_wins = bingo_cards.filter(card => check_for_win(card))
         if (round_wins.length !== 0) {
             // If we have some winners, remove them from the list
             bingo_cards = bingo_cards.filter(card => !check_for_win(card))
-            console.log(`Removing ${round_wins.length} winning cards, ${bingo_cards.length} cards left`)
             if(bingo_cards.length === 0){
                 // If we've run out of cards, then that means this round's winner is our solution
                 winning_cards = round_wins
                 winning_num = called_number
+                break
             }
         }
-        return winning_cards
-    })
+        await new Promise(r => setTimeout(r, 500));
+    }
 
     winning_cards.forEach(winning_card => {
         console.log(
@@ -98,8 +124,8 @@ axios.get(`https://adventofcode.com/2021/day/4/input`,{
                 st+row.reduce((s,{marked}) => s+(marked?'+ ':'. '),'\n')
             ,'')+'\n'
         )
-    
+
         const winning_score = get_card_score(winning_card)
         console.log(winning_num, '*', winning_score, '=', winning_num*winning_score)
     })
-})
+}())
