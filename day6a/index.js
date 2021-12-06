@@ -9,8 +9,11 @@ axios.get(`https://adventofcode.com/2021/day/6/input`,{
 .then(({data}) => {    
     const stg = data.trim().split(',').map(n => parseInt(n))
 
-    console.log(stg)
-
+    /**
+     * EZ PZ, just loop through the fish and increment births for all our 0 fish and reset them to 6.
+     * Then decrement all the other fish.
+     * Once we're done, push all the births to the array with their 8 day wait
+     */
     let fish = stg.slice()
     for(let day = 0; day < 80; day++) {
         let births = 0
@@ -26,4 +29,5 @@ axios.get(`https://adventofcode.com/2021/day/6/input`,{
     }
 
     console.log(fish.length)
+    // I'm sure this will work cleanly with part 2
 })
