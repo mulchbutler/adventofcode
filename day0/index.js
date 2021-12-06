@@ -9,4 +9,5 @@ axios.get(`https://adventofcode.com/2021/day/1/input`,{
 .then(({data}) => {    
     const stg = data.trim().split('\n')
 
+    console.log(stg)
 })
