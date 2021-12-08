@@ -120,3 +120,5 @@ dist
 
 # Advent of Code inputs
 input.txt
+
+.DS_Store
